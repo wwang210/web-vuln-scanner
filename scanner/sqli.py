@@ -80,7 +80,7 @@ def scan(session: requests.Session, endpoints: list[dict], delay: float = 0.2) -
     for ep in endpoints:
         params = ep["params"] if ep["method"] == "GET" else ep["data"]
         for param in params:
-            key = (ep["url"], param)
+            key = (ep["url"], param, ep["method"])
             if key in seen:
                 continue
 

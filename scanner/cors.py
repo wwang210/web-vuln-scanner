@@ -41,11 +41,16 @@ def scan(session: requests.Session, endpoints: list[dict], delay: float = 0.2) -
         parsed = urlparse(url)
         origin_host = f"{parsed.scheme}://{parsed.netloc}"
 
-        # --- Check 1: wildcard + credentials ---
-        resp = _get_cors_headers(session, url, "https://evil.example.com", delay)
-        if resp:
+        # --- Check 1 + 2: wildcard+credentials and origin reflection ---
+        # Both checks share the same probe requests, so we combine them into
+        # a single loop to avoid sending duplicate requests per origin.
+        for probe_origin in PROBE_ORIGINS:
+            resp = _get_cors_headers(session, url, probe_origin, delay)
+            if not resp:
+                continue
             acao = resp.headers.get("Access-Control-Allow-Origin", "")
             acac = resp.headers.get("Access-Control-Allow-Credentials", "").lower()
+
             if acao == "*" and acac == "true":
                 findings.append(Finding(
                     vuln_type="CORS Misconfiguration",
@@ -55,15 +60,7 @@ def scan(session: requests.Session, endpoints: list[dict], delay: float = 0.2) -
                     evidence="Wildcard ACAO (*) with Access-Control-Allow-Credentials: true",
                     method="GET",
                 ))
-                continue
-
-        # --- Check 2: origin reflection ---
-        for probe_origin in PROBE_ORIGINS:
-            resp = _get_cors_headers(session, url, probe_origin, delay)
-            if not resp:
-                continue
-            acao = resp.headers.get("Access-Control-Allow-Origin", "")
-            acac = resp.headers.get("Access-Control-Allow-Credentials", "").lower()
+                break
 
             if acao == probe_origin and acac == "true":
                 sev = Severity.CRITICAL if probe_origin == "null" else Severity.HIGH

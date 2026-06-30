@@ -6,7 +6,7 @@ Stays within the same origin to avoid accidentally probing third-party hosts.
 import re
 import time
 from collections import deque
-from urllib.parse import urljoin, urlparse, urldefrag, parse_qs, urlencode
+from urllib.parse import urljoin, urlparse, urldefrag, parse_qs
 
 import requests
 from bs4 import BeautifulSoup
@@ -74,7 +74,9 @@ class Crawler:
             self.endpoints.append({"url": base, "method": "GET", "params": flat, "data": {}})
 
     def crawl(self) -> list[dict]:
-        queue: deque[str] = deque([self._normalize(self.base_url)])
+        start = self._normalize(self.base_url)
+        queue: deque[str] = deque([start])
+        queued: set[str] = {start}
 
         while queue and len(self.visited) < self.max_pages:
             url = queue.popleft()
@@ -98,7 +100,8 @@ class Crawler:
             soup = BeautifulSoup(resp.text, "html.parser")
 
             for link in self._extract_links(soup, url):
-                if link not in self.visited:
+                if link not in self.visited and link not in queued:
+                    queued.add(link)
                     queue.append(link)
 
             for form in self._extract_forms(soup, url):

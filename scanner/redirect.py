@@ -31,6 +31,7 @@ def scan(session: requests.Session, endpoints: list[dict], delay: float = 0.2) -
     # Build a no-follow session for this check
     no_follow = requests.Session()
     no_follow.headers = session.headers.copy()
+    no_follow.cookies.update(session.cookies)
     no_follow.verify = session.verify
 
     for ep in endpoints:

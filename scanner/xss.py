@@ -4,8 +4,6 @@ whether the raw payload is echoed back in the response body unescaped.
 """
 
 import time
-from urllib.parse import urlencode
-
 import requests
 
 from .models import Finding, Severity
@@ -61,7 +59,7 @@ def scan(session: requests.Session, endpoints: list[dict], delay: float = 0.2) -
                     continue
 
                 if marker.lower() in resp.text.lower():
-                    key = (ep["url"], param)
+                    key = (ep["url"], param, ep["method"])
                     if key not in seen:
                         seen.add(key)
                         findings.append(Finding(

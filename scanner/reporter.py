@@ -4,7 +4,7 @@ writes a machine-readable JSON report.
 """
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 from colorama import Fore, Style, init
 
@@ -60,7 +60,7 @@ def print_summary(findings: list[Finding], target: str, elapsed: float, pages_cr
 def write_json(findings: list[Finding], target: str, path: str) -> None:
     report = {
         "target": target,
-        "generated": datetime.utcnow().isoformat() + "Z",
+        "generated": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "total": len(findings),
         "findings": [
             {

@@ -74,7 +74,7 @@ Reporter (colored terminal + optional JSON)
 **Requirements:** Python 3.10+, pip
 
 ```bash
-git clone https://github.com/your-username/web-vuln-scanner.git
+git clone https://github.com/wwang210/web-vuln-scanner.git
 cd web-vuln-scanner
 
 python3 -m venv .venv
